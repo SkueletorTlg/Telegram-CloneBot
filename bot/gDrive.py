@@ -135,7 +135,7 @@ class GoogleDriveHelper:
         try:
             file_id = self.getIdFromUrl(link)
         except (KeyError,IndexError):
-            msg = "Google drive ID could not be found in the provided link"
+            msg = "No se pudo encontrar el ID de la unidad de Google en el enlace proporcionado"
             return msg
         msg = ""
         LOGGER.info(f"File ID: {file_id}")
@@ -167,7 +167,7 @@ class GoogleDriveHelper:
                    f' ({get_readable_file_size(self.transferred_size)})'
             if INDEX_URL:
                 url = requests.utils.requote_uri(f'{INDEX_URL}/{meta.get("name")}/')
-                msg += f' | <a href="{url}"> Index URL</a>'
+                msg += f' | <a href="{url}"> URL de índice</a>'
         else:
             try:
                 file = self.check_file_exists(meta.get('id'), self.gparentid)
@@ -178,7 +178,7 @@ class GoogleDriveHelper:
                     file = self.copyFile(meta.get('id'), self.gparentid, status)
             except Exception as e:
                 if isinstance(e, RetryError):
-                    LOGGER.info(f"Total Attempts: {e.last_attempt.attempt_number}")
+                    LOGGER.info(f"Intentos totales: {e.last_attempt.attempt_number}")
                     err = e.last_attempt.exception()
                 else:
                     err = str(e).replace('>', '').replace('<', '')
@@ -196,7 +196,7 @@ class GoogleDriveHelper:
 
     def cloneFolder(self, name, local_path, folder_id, parent_id, status, ignoreList=[]):
         page_token = None
-        q = f"'{folder_id}' in parents"
+        q = f"'{folder_id}' En los padres"
         files = []
         LOGGER.info(f"Syncing: {local_path}")
         while True:
@@ -222,7 +222,7 @@ class GoogleDriveHelper:
                 if not str(file.get('id')) in ignoreList:
                     self.cloneFolder(file.get('name'), file_path, file.get('id'), current_dir_id, status, ignoreList)
                 else:
-                    LOGGER.info("Ignoring FolderID from clone: " + str(file.get('id')))
+                    LOGGER.info("Ignorando FolderID del clon: " + str(file.get('id')))
             else:
                 try:
                     if not self.check_file_exists(file.get('name'), parent_id):
@@ -237,7 +237,7 @@ class GoogleDriveHelper:
                     pass
                 except Exception as e:
                     if isinstance(e, RetryError):
-                        LOGGER.info(f"Total Attempts: {e.last_attempt.attempt_number}")
+                        LOGGER.info(f"Intentos totales: {e.last_attempt.attempt_number}")
                         err = e.last_attempt.exception()
                     else:
                         err = e
@@ -256,7 +256,7 @@ class GoogleDriveHelper:
         file_id = file.get("id")
         if not IS_TEAM_DRIVE:
             self.__set_permission(file_id)
-        LOGGER.info("Created Google-Drive Folder:\nName: {}\nID: {} ".format(file.get("name"), file_id))
+        LOGGER.info("Carpeta creada en Google-Drive:\nNombre: {}\nID: {} ".format(file.get("name"), file_id))
         return file_id
 
 
@@ -280,9 +280,9 @@ class GoogleDriveHelper:
                 with open(self.__G_DRIVE_TOKEN_FILE, 'wb') as token:
                     pickle.dump(credentials, token)
         else:
-            LOGGER.info(f"Authorizing with {SERVICE_ACCOUNT_INDEX}.json service account")
+            LOGGER.info(f"Autorizando con {SERVICE_ACCOUNT_INDEX}.json cuenta de servicio")
             credentials = service_account.Credentials.from_service_account_file(
-                f'accounts/{SERVICE_ACCOUNT_INDEX}.json',
+                f'cuentas/{SERVICE_ACCOUNT_INDEX}.json',
                 scopes=self.__OAUTH_SCOPE)
         return build('drive', 'v3', credentials=credentials, cache_discovery=False)
 
@@ -292,7 +292,7 @@ class GoogleDriveHelper:
     def check_folder_exists(self, fileName, u_parent_id):
         fileName = clean_name(fileName)
         # Create Search Query for API request.
-        query = f"'{u_parent_id}' in parents and (name contains '{fileName}' and trashed=false)"
+        query = f"'{u_parent_id}' en los padres y (el nombre contiene '{fileName}' y trashed=false)"
         response = self.__service.files().list(supportsTeamDrives=True,
                                                includeTeamDriveItems=True,
                                                q=query,
@@ -310,7 +310,7 @@ class GoogleDriveHelper:
     def check_file_exists(self, fileName, u_parent_id):
         fileName = clean_name(fileName)
         # Create Search Query for API request.
-        query = f"'{u_parent_id}' in parents and (name contains '{fileName}' and trashed=false)"
+        query = f"'{u_parent_id}' en los padres y (el nombre contiene '{fileName}' y trashed=false)"
         response = self.__service.files().list(supportsTeamDrives=True,
                                                includeTeamDriveItems=True,
                                                q=query,
@@ -335,5 +335,5 @@ def get_readable_file_size(size_in_bytes) -> str:
     try:
         return f'{round(size_in_bytes, 2)}{SIZE_UNITS[index]}'
     except IndexError:
-        return 'File too large'
+        return 'Archivo demasiado grande.'
 
