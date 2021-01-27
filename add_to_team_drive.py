@@ -8,14 +8,14 @@ import os, pickle
 stt = time.time()
 
 parse = argparse.ArgumentParser(
-    description='A tool to add service accounts to a shared drive from a folder containing credential files.')
+    description='Una herramienta para agregar cuentas de servicio a una unidad compartida desde una carpeta que contiene archivos de credenciales.')
 parse.add_argument('--path', '-p', default='accounts',
-                   help='Specify an alternative path to the service accounts folder.')
+                   help='Especifique una ruta alternativa a la carpeta de cuentas de servicio.')
 parse.add_argument('--credentials', '-c', default='./credentials.json',
-                   help='Specify the relative path for the credentials file.')
-parse.add_argument('--yes', '-y', default=False, action='store_true', help='Skips the sanity prompt.')
+                   help='Especifique la ruta relativa para el archivo de credenciales.')
+parse.add_argument('--yes', '-y', default=False, action='store_true', help='Omite el aviso de cordura.')
 parsereq = parse.add_argument_group('required arguments')
-parsereq.add_argument('--drive-id', '-d', help='The ID of the Shared Drive.', required=True)
+parsereq.add_argument('--drive-id', '-d', help='El ID de la unidad compartida.', required=True)
 
 args = parse.parse_args()
 acc_dir = args.path
@@ -24,16 +24,16 @@ credentials = glob.glob(args.credentials)
 
 try:
     open(credentials[0], 'r')
-    print('>> Found credentials.')
+    print('>> Credenciales encontradas.')
 except IndexError:
-    print('>> No credentials found.')
+    print('>> No se encontraron credenciales.')
     sys.exit(0)
 
 if not args.yes:
     # input('Make sure the following client id is added to the shared drive as Manager:\n' + json.loads((open(
     # credentials[0],'r').read()))['installed']['client_id'])
-    input('>> Make sure the **Google account** that has generated credentials.json\n   is added into your Team Drive '
-          '(shared drive) as Manager\n>> (Press any key to continue)')
+    input('>> Asegúrese de que la **cuenta de Google** haya generado credentials.json\n   se agrega a tu unidad de equipo '
+          '(unidad compartida) como gerente\n>> (Pulse cualquier tecla para continuar)')
 
 creds = None
 if os.path.exists('token_sa.pickle'):
@@ -58,7 +58,7 @@ drive = googleapiclient.discovery.build("drive", "v3", credentials=creds)
 batch = drive.new_batch_http_request()
 
 aa = glob.glob('%s/*.json' % acc_dir)
-pbar = progress.bar.Bar("Readying accounts", max=len(aa))
+pbar = progress.bar.Bar("Preparando cuentas", max=len(aa))
 for i in aa:
     ce = json.loads(open(i, 'r').read())['client_email']
     batch.add(drive.permissions().create(fileId=did, supportsAllDrives=True, body={
@@ -68,10 +68,10 @@ for i in aa:
     }))
     pbar.next()
 pbar.finish()
-print('Adding...')
+print('Añadiendo...')
 batch.execute()
 
-print('Complete.')
+print('Completado.')
 hours, rem = divmod((time.time() - stt), 3600)
 minutes, sec = divmod(rem, 60)
-print("Elapsed Time:\n{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), sec))
+print("Tiempo transcurrido:\n{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), sec))
