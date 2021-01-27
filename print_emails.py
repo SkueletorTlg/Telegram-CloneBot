@@ -15,4 +15,4 @@ if USE_SERVICE_ACCOUNTS and os.path.exists(os.path.join(os.getcwd(), path)):
     strr = strr[:-3]
     print(strr)
 else:
-    print('Please Set `USE_SERVICE_ACCOUNTS` to True in config.py file.')
+    print('Establezca `USE_SERVICE_ACCOUNTS` en True en el archivo config.py.')
